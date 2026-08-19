@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <!-- 响应式 viewport，适配桌面端与移动端（F4 / T2） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>产品上线倒计时</title>
+  <style>
+    /* ============================================================
+     * 全局重置与基础样式
+     * ========================================================== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: #eaf2ff;
+      background: #0a0e27;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ============================================================
+     * 动画①：动态背景层（CSS 渐变 + @keyframes 流动/呼吸动画）
+     * 科技感深蓝/紫渐变，持续流动营造期待感（F3）
+     * ========================================================== */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(-45deg, #0a0e27, #1a1a4e, #2d1b69, #0d2547);
+      background-size: 400% 400%;
+      animation: bgFlow 16s ease-in-out infinite;
+    }
+
+    @keyframes bgFlow {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 粒子装饰层：用径向渐变模拟星点，叠加缓慢漂浮动画 */
+    .particle-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(2px 2px at 60% 70%, rgba(120,200,255,0.6), transparent),
+        radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.5), transparent),
+        radial-gradient(2px 2px at 80% 10%, rgba(180,150,255,0.6), transparent),
+        radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1.5px 1.5px at 33% 80%, rgba(100,255,218,0.5), transparent),
+        radial-gradient(1px 1px at 15% 90%, rgba(255,255,255,0.5), transparent);
+      background-repeat: repeat;
+      background-size: 350px 350px;
+      animation: particleDrift 40s linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes particleDrift {
+      from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+      to   { background-position: 350px 350px, -350px 350px, 350px -350px,
+                                   -350px -350px, 175px 350px, -175px -350px, 350px 175px; }
+    }
+
+    /* ============================================================
+     * 内容容器：保证内容在背景层之上
+     * ========================================================== */
+    .content {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(1.5rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem);
+    }
+
+    /* ============================================================
+     * 头部区域（F1）：产品上线标题 + 副标题
+     * 首屏 fadeIn 渐入动画
+     * ========================================================== */
+    header {
+      text-align: center;
+      margin-bottom: clamp(2rem, 6vw, 3.5rem);
+      animation: fadeInDown 1.2s ease-out both;
+    }
+
+    header h1 {
+      font-size: clamp(1.8rem, 6vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      background: linear-gradient(90deg, #64ffda, #a78bfa, #64ffda);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 4s linear infinite;
+      margin-bottom: 0.6rem;
+    }
+
+    header .subtitle {
+      font-size: clamp(0.9rem, 2.5vw, 1.25rem);
+      color: #9aa5d0;
+      letter-spacing: 0.15em;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes textShimmer {
+      to { background-position: 200% center; }
+    }
+
+    /* ============================================================
+     * 倒计时区域（F1 / F2）
+     * 4 个数字卡片：天 / 时 / 分 / 秒
+     * ========================================================== */
+    .countdown {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: clamp(0.6rem, 2.5vw, 1.8rem);
+      margin-bottom: clamp(2.5rem, 7vw, 4rem);
+    }
+
+    .count-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: clamp(80px, 20vw, 140px);
+      padding: clamp(1rem, 3vw, 1.8rem) clamp(0.8rem, 2.5vw, 1.5rem);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(100, 255, 218, 0.25);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      animation: fadeInUp 1s ease-out both;
+    }
+
+    /* 卡片依次渐入，制造层次感 */
+    .count-unit:nth-child(1) { animation-delay: 0.2s; }
+    .count-unit:nth-child(2) { animation-delay: 0.4s; }
+    .count-unit:nth-child(3) { animation-delay: 0.6s; }
+    .count-unit:nth-child(4) { animation-delay: 0.8s; }
+
+    .count-unit .number {
+      font-size: clamp(2.2rem, 9vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: #64ffda;
+      text-shadow: 0 0 20px rgba(100, 255, 218, 0.5);
+    }
+
+    .count-unit .label {
+      margin-top: 0.6rem;
+      font-size: clamp(0.7rem, 2vw, 0.95rem);
+      letter-spacing: 0.2em;
+      color: #9aa5d0;
+      text-transform: uppercase;
+    }
+
+    /* 动画②：数字变化时的脉冲动画（秒卡片触发，F3） */
+    .count-unit.pulse .number {
+      animation: pulse 0.6s ease-out;
+    }
+
+    @keyframes pulse {
+      0%   { transform: scale(1);    text-shadow: 0 0 20px rgba(100, 255, 218, 0.5); }
+      50%  { transform: scale(1.15); text-shadow: 0 0 35px rgba(100, 255, 218, 0.9); }
+      100% { transform: scale(1);    text-shadow: 0 0 20px rgba(100, 255, 218, 0.5); }
+    }
+
+    /* 倒计时结束后的"产品已上线"提示（F2） */
+    .launched {
+      display: none;
+      font-size: clamp(1.5rem, 5vw, 2.8rem);
+      font-weight: 800;
+      color: #64ffda;
+      text-shadow: 0 0 30px rgba(100, 255, 218, 0.8);
+      letter-spacing: 0.1em;
+      animation: fadeInUp 1s ease-out both, pulse 2s ease-in-out infinite 1s;
+      margin-bottom: clamp(2.5rem, 7vw, 4rem);
+    }
+
+    .launched.show {
+      display: block;
+    }
+
+    .countdown.hide {
+      display: none;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================================
+     * 产品介绍 / 宣传图区域（F1 / F3）
+     * 使用纯 CSS/SVG 绘制科技感图形，避免外部图片依赖（T4 / R4）
+     * 动画③：浮动动画 + 渐入
+     * ========================================================== */
+    .intro {
+      width: 100%;
+      max-width: 760px;
+      text-align: center;
+      animation: fadeInUp 1.2s ease-out 0.5s both;
+    }
+
+    /* 纯 SVG 科技感装饰图形容器，叠加浮动动画 */
+    .hero-visual {
+      width: clamp(140px, 30vw, 220px);
+      height: clamp(140px, 30vw, 220px);
+      margin: 0 auto 1.5rem;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .hero-visual svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 25px rgba(100, 255, 218, 0.4));
+    }
+
+    /* SVG 内部圆环旋转动画 */
+    .ring-rotate {
+      transform-origin: 50px 50px;
+      animation: rotate 12s linear infinite;
+    }
+
+    .ring-rotate-reverse {
+      transform-origin: 50px 50px;
+      animation: rotate 8s linear infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-18px); }
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .intro h2 {
+      font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #eaf2ff;
+    }
+
+    .intro p {
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      line-height: 1.8;
+      color: #aab4d8;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .feature-tag {
+      padding: 0.5rem 1.2rem;
+      border: 1px solid rgba(167, 139, 250, 0.4);
+      border-radius: 50px;
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+      color: #c4b5fd;
+      background: rgba(167, 139, 250, 0.08);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      animation: fadeInUp 0.8s ease-out both;
+    }
+
+    .feature-tag:nth-child(1) { animation-delay: 0.8s; }
+    .feature-tag:nth-child(2) { animation-delay: 1.0s; }
+    .feature-tag:nth-child(3) { animation-delay: 1.2s; }
+
+    /* ============================================================
+     * 底部信息（F1）
+     * ========================================================== */
+    footer {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      text-align: center;
+      padding: 1.5rem;
+      font-size: clamp(0.75rem, 2vw, 0.85rem);
+      color: #6b7299;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    footer a {
+      color: #8b93bf;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: #64ffda;
+    }
+
+    /* ============================================================
+     * 响应式断点（F4 / T2）
+     * 移动端：倒计时卡片 2×2 布局自适应
+     * ========================================================== */
+    @media (max-width: 600px) {
+      .countdown {
+        gap: 0.8rem;
+      }
+
+      .count-unit {
+        flex: 1 1 calc(50% - 0.8rem);
+        min-width: 0;
+      }
+
+      .features {
+        gap: 0.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 动态背景层（动画①） -->
+  <div class="bg-layer"></div>
+  <div class="particle-layer"></div>
+
+  <div class="content">
+    <!-- 头部：产品上线标题 -->
+    <header>
+      <h1>新产品 · 即将上线</h1>
+      <p class="subtitle">敬请期待 · 倒计时开启</p>
+    </header>
+
+    <!-- 倒计时结束提示（默认隐藏，倒计时归零后显示） -->
+    <div class="launched" id="launched">🎉 产品已上线 🎉</div>
+
+    <!-- 倒计时区域：天 / 时 / 分 / 秒 -->
+    <main>
+      <div class="countdown" id="countdown">
+        <div class="count-unit" id="unit-days">
+          <span class="number" id="days">00</span>
+          <span class="label">天 Days</span>
+        </div>
+        <div class="count-unit" id="unit-hours">
+          <span class="number" id="hours">00</span>
+          <span class="label">时 Hours</span>
+        </div>
+        <div class="count-unit" id="unit-minutes">
+          <span class="number" id="minutes">00</span>
+          <span class="label">分 Minutes</span>
+        </div>
+        <div class="count-unit" id="unit-seconds">
+          <span class="number" id="seconds">00</span>
+          <span class="label">秒 Seconds</span>
+        </div>
+      </div>
+
+      <!-- 产品介绍 / 宣传图区域（纯 SVG 自绘，无外部依赖） -->
+      <section class="intro">
+        <div class="hero-visual" aria-hidden="true">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- 外层旋转环 -->
+            <circle class="ring-rotate" cx="50" cy="50" r="46"
+                    fill="none" stroke="#64ffda" stroke-width="1.5"
+                    stroke-dasharray="6 4" opacity="0.6"/>
+            <!-- 中层反向旋转环 -->
+            <circle class="ring-rotate-reverse" cx="50" cy="50" r="36"
+                    fill="none" stroke="#a78bfa" stroke-width="1.5"
+                    stroke-dasharray="3 6" opacity="0.7"/>
+            <!-- 中心核心 -->
+            <circle cx="50" cy="50" r="14" fill="url(#coreGrad)"/>
+            <!-- 轨道节点 -->
+            <circle class="ring-rotate" cx="50" cy="4" r="2.5" fill="#64ffda"/>
+            <circle class="ring-rotate-reverse" cx="50" cy="14" r="2" fill="#a78bfa"/>
+            <defs>
+              <radialGradient id="coreGrad">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                <stop offset="50%" stop-color="#64ffda" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#2d1b69" stop-opacity="0.3"/>
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+        <h2>下一代智能产品体验</h2>
+        <p>
+          融合前沿科技与极致设计，为您带来全新的数字化体验。
+          产品即将正式上线，敬请关注。倒计时归零的那一刻，精彩即刻开启。
+        </p>
+        <div class="features">
+          <span class="feature-tag">⚡ 高性能</span>
+          <span class="feature-tag">🔒 安全可靠</span>
+          <span class="feature-tag">🎨 极致体验</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 底部信息 -->
+  <footer>
+    <p>© 2026 CodeM 测试项目 · 产品上线倒计时网页</p>
+  </footer>
+
+  <script>
+    /* ============================================================
+     * 倒计时逻辑（F2 / T3）
+     * 目标时间：2026-08-31 00:00:00 北京时间（UTC+8）
+     * 使用 ISO-8601 带时区偏移字符串，与浏览器本地时区无关（满足 T3）
+     * ========================================================== */
+    (function () {
+      'use strict';
+
+      // 2026-08-31 00:00:00 北京时间 (UTC+8)
+      // 使用 +08:00 偏移，Date 解析后为绝对时间点，不受本地时区影响
+      var TARGET = new Date('2026-08-31T00:00:00+08:00');
+
+      // 缓存 DOM 引用，避免每秒重复查询（性能优化）
+      var elDays    = document.getElementById('days');
+      var elHours   = document.getElementById('hours');
+      var elMinutes = document.getElementById('minutes');
+      var elSeconds = document.getElementById('seconds');
+      var elCountdown = document.getElementById('countdown');
+      var elLaunched  = document.getElementById('launched');
+      var elUnitSeconds = document.getElementById('unit-seconds');
+
+      // 记录上一次秒数，用于判断是否触发脉冲动画
+      var lastSeconds = -1;
+
+      /**
+       * 将数字补零为两位字符串（天除外，天数可能超过两位）。
+       * @param {number} n - 待格式化的数字
+       * @returns {string} 两位补零字符串
+       */
+      function pad2(n) {
+        return n < 10 ? '0' + n : String(n);
+      }
+
+      /**
+       * 核心倒计时更新函数。
+       * 计算当前时间与目标时间的差值，拆分为天/时/分/秒并写入 DOM。
+       * 若倒计时结束（diff <= 0），切换为"产品已上线"状态。
+       */
+      function updateCountdown() {
+        var now = Date.now();
+        var diff = TARGET.getTime() - now;
+
+        if (diff <= 0) {
+          // 倒计时结束：隐藏倒计时区域，显示上线提示（F2）
+          elCountdown.classList.add('hide');
+          elLaunched.classList.add('show');
+          return;
+        }
+
+        // 计算天 / 时 / 分 / 秒
+        var days    = Math.floor(diff / 86400000);           // 86400000 = 24*60*60*1000
+        var hours   = Math.floor(diff / 3600000) % 24;       // 3600000 = 60*60*1000
+        var minutes = Math.floor(diff / 60000) % 60;         // 60000 = 60*1000
+        var seconds = Math.floor(diff / 1000) % 60;
+
+        // 写入 DOM（天不补零，其余两位补零）
+        elDays.textContent    = String(days);
+        elHours.textContent   = pad2(hours);
+        elMinutes.textContent = pad2(minutes);
+
+        // 秒数变化时触发脉冲动画（动画②），并在动画结束后移除 class
+        if (seconds !== lastSeconds) {
+          elSeconds.textContent = pad2(seconds);
+          lastSeconds = seconds;
+          elUnitSeconds.classList.remove('pulse');
+          // 触发重绘以重新播放动画
+          void elUnitSeconds.offsetWidth;
+          elUnitSeconds.classList.add('pulse');
+        }
+      }
+
+      // 页面加载时立即调用一次，避免首屏空白 1 秒
+      updateCountdown();
+
+      // 每秒自动更新（F2）
+      setInterval(updateCountdown, 1000);
+    })();
+  </script>
+</body>
+</html>
